@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+	<meta name="misapplication-tap-highlight" content="no" />
+	<meta name="HandheldFriendly" content="true" />
+	<meta name="MobileOptimized" content="320" />
+	<title>变化发现</title>
+	<script src="../js/mui.js"></script>
+	<script src="../avalon.js" type="text/javascript" charset="utf-8"></script>
+	<link href="../css/mui.min.css" rel="stylesheet" />
+	<link rel="stylesheet" type="text/css" href="../js/leaflet/leaflet.css" />
+	<link rel="stylesheet" type="text/css" href="../css/jui.css">
+	<script type="text/javascript" charset="utf-8">
+		mui.init();
+	</script>
+</head>
+
+<body class="page-map" ms-controller="map">
+
+<div id="map">
+</div>
+<div id="pos" ms-click="getPos">
+	<img src="../imgs/pos.png">
+</div>
+
+		<span class="popup" ms-click="doSubmit">
+			<h5 >商户入驻</h5>
+			<p class="mui-ellipsis" ms-text=result>
+				查询中...
+			</p>
+			<i class="arrow-down"></i>
+			<span class="mui-icon mui-icon-arrowright"></span>
+		</span>
+</body>
+
+</html>
+<script src="../js/template.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="../js/leaflet/leaflet.js"></script>
+<script src="../js/plugins/tms/leaflet.ChineseTmsProviders.js"></script>
+
+<script>
+	var MAP, LAYERS, MENU,SL,YX;
+	var showInfo = false,INFO;
+	mui.plusReady(function() {
+		require(["server.js", "js/template.min.js"], function(server, template) {
+			plus.screen.lockOrientation("portrait-primary");
+			bussiness =  plus.webview.getWebviewById("bussiness.html");
+			current = plus.webview.currentWebview();
+			plus.nativeUI.closeWaiting();
+			MENU = mui.preload({
+				url: "menu.html",
+				id: "menu",
+				styles: {
+					top: "0px",
+					bottom: document.documentElement.clientHeight - 378 + "px"
+				}
+			});
+			var vm = avalon.define({
+				$id: "map",
+				getPos: function() {
+					var wa = plus.nativeUI.showWaiting();
+					var marker = getRealPos(LAYERS, MAP, function(marker) {
+						MAP.panTo(marker._latlng, 15);
+						wa.close();
+					});
+				},
+				result: "查询中...",
+				latlng: "",
+				showResult: false,
+				showSelect:false,
+				layerType:"sl",
+				doSubmit: function(e) {
+					mui.fire(bussiness,"getPos",{latlng:vm.latlng,place:vm.result=="无相关信息"?"":vm.result});
+					current.hide();
+				}
+			});
+			avalon.scan();
+			initMap();
+
+			function initMap() {
+				var map = MAP = new L.map("map", {
+					minZoom: 1,
+					maxZoom: 18,
+					center: [28.658128746033, 121.41615288591],
+					zoom: 13,
+					zoomControl: false,
+					attributionControl: false
+				});
+				new L.control.zoom({
+					position: "bottomright"
+				}).addTo(map);
+				var tileOptions = {
+					maxZoom: 18,
+					minZoom: 1
+				};
+				var slmap = new L.TileLayer.ChinaProvider("TianDiTu.Normal.Map", tileOptions);
+				var slmapa = new L.TileLayer.ChinaProvider("TianDiTu.Normal.Annotion", tileOptions);
+				var yxmap = new L.TileLayer.ChinaProvider("TianDiTu.Satellite.Map", tileOptions);
+				var yxmapa = new L.TileLayer.ChinaProvider("TianDiTu.Satellite.Map", tileOptions);
+				var sl = SL = new L.layerGroup([slmap, slmapa]).addTo(map),
+						yx = YX = new L.layerGroup([yxmap, yxmapa]);
+				var baseLayers = {
+					"矢量图": sl,
+					"影像图": yx
+				};
+				sl.addTo(map);
+				var markerLayer = LAYERS = new L.LayerGroup().addTo(map);
+				map.addLayer(markerLayer);
+				renderCenterMarker(map);
+			}
+
+			function getRealPos(markerLayer, map, callback) {
+				getPos(function(lat, lng) {
+					var icon = new L.icon({
+						iconUrl: "../imgs/icon/2.png",
+						iconSize: [25, 25]
+					});
+					var marker = new L.marker([lat, lng], {
+						icon: icon
+					}).addTo(markerLayer);
+					callback ? callback.call(this, marker) : null;
+				});
+			}
+
+			function getPos(callback) {
+				plus.geolocation.getCurrentPosition(function(position) {
+					var codns = position.coords; //获取地理坐标信息；
+					var lat = codns.latitude; //获取到当前位置的纬度；
+					var longt = codns.longitude; //获取到当前位置的经度
+					callback.call(this, lat, longt);
+				}, function(e) {
+					alert("获取位置信息失败：" + e.message);
+				});
+			}
+
+
+			function renderCenterMarker(map) {
+				map.on("moveend", function(e) {
+					var _center = map.getCenter();
+					vm.latlng = _center.lng +"," +_center.lat;
+					getQuery(_center);
+				});
+				map.fire("moveend");
+			}
+
+			function getQuery(center) {
+				if (typeof vm != "undefined") {
+					vm.result = "查询中";
+				}
+				server.getQuery({
+					x: center.lng,
+					y: center.lat
+				}, function(rep) {
+					if (rep.length > 0) {
+						vm.result = rep[0].address;
+					} else {
+						vm.result = "无相关信息";
+					}
+				})
+			}
+
+			mui.back = function() {
+				current.hide();
+			}
+		})
+	});
+</script>

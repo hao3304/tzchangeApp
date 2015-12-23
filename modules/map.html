@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+	<meta name="misapplication-tap-highlight" content="no" />
+	<meta name="HandheldFriendly" content="true" />
+	<meta name="MobileOptimized" content="320" />
+	<title>变化发现</title>
+	<script src="../js/mui.js"></script>
+	<script src="../avalon.js" type="text/javascript" charset="utf-8"></script>
+	<link href="../css/mui.min.css" rel="stylesheet" />
+	<link rel="stylesheet" type="text/css" href="../js/leaflet/leaflet.css" />
+	<link rel="stylesheet" type="text/css" href="../css/jui.css">
+	<script type="text/javascript" charset="utf-8">
+		mui.init();
+	</script>
+</head>
+
+<body class="page-map" ms-controller="map">
+
+<div id="map">
+</div>
+<div id="pos" ms-click="getPos">
+	<img src="../imgs/pos.png">
+</div>
+<button id="btn-menu" ms-click="showMenu" class="mui-btn mui-btn-primary ">
+	地理变化发现 <span class="mui-icon mui-icon-bars"></span>
+</button>
+		<span class="popup" ms-click="doSubmit">
+			<h5 >上报变化</h5>
+			<p class="mui-ellipsis" ms-text=result>
+				查询中...
+			</p>
+			<i class="arrow-down"></i>
+			<span class="mui-icon mui-icon-arrowright"></span>
+		</span>
+</body>
+<div id="check">
+	<a class="layers" ms-click="onSelectLayers"></a>
+</div>
+<div class="check-layers" ms-visible="showSelect" style="display: none">
+	<ul>
+		<li ms-class="active:layerType=='sl'">
+			<a class="sl" ms-click="onSelect('sl')"></a>
+
+		</li>
+		<li  ms-class="active:layerType=='yx'">
+			<a class="yx" ms-click="onSelect('yx')" ></a>
+		</li>
+	</ul>
+</div>
+<div class="modal" ms-visible="showSelect" ms-click="closeSelect"></div>
+
+</html>
+<script src="../js/template.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="../js/leaflet/leaflet.js"></script>
+<script src="../js/plugins/tms/leaflet.ChineseTmsProviders.js"></script>
+
+<script>
+	var MAP, LAYERS, MENU,SL,YX;
+	var showMenu = false;
+	var showInfo = false,INFO;
+	mui.plusReady(function() {
+		require(["server.js", "js/template.min.js"], function(server, template) {
+			plus.screen.lockOrientation("portrait-primary");
+			plus.navigator.setFullscreen(true);
+			main = plus.webview.currentWebview();
+			plus.nativeUI.closeWaiting();
+			main.show();
+			main.addEventListener('maskClick', function() {
+				closeMenu();
+				hideInfo();
+			});
+			MENU = mui.preload({
+				url: "menu.html",
+				id: "menu",
+				styles: {
+					top: "0px",
+					bottom: document.documentElement.clientHeight - 378 + "px"
+				}
+			});
+			var vm = avalon.define({
+				$id: "map",
+				getPos: function() {
+					var wa = plus.nativeUI.showWaiting();
+					var marker = getRealPos(LAYERS, MAP, function(marker) {
+						MAP.panTo(marker._latlng, 15);
+						wa.close();
+					});
+				},
+				result: "查询中...",
+				latlng: "",
+				showResult: false,
+				showSelect:false,
+				layerType:"sl",
+				showMenu: openMenu,
+				onSelectLayers: function () {
+					vm.showSelect = true;
+				},
+				closeSelect: function () {
+					vm.showSelect = false;
+				},
+				onSelect: function (t) {
+					vm.layerType = t;
+					vm.showSelect = false;
+
+					if(t == "sl"){
+						MAP.removeLayer(YX);
+						MAP.addLayer(SL);
+					}else{
+						MAP.removeLayer(SL);
+						MAP.addLayer(YX);
+					}
+				},
+				doSubmit: function(e) {
+					mui.openWindow({
+						id: "submit",
+						url: "submit.html",
+						extras: {
+							latlng: vm.latlng,
+							address: vm.result == "无相关信息" ? "" : vm.result
+						},
+						show: {
+							aniShow: "zoom-fade-out",
+							autoShow: true
+						}
+					});
+				}
+			});
+			avalon.scan();
+			initMap();
+
+			function initMap() {
+				var map = MAP = new L.map("map", {
+					minZoom: 1,
+					maxZoom: 18,
+					center: [28.658128746033, 121.41615288591],
+					zoom: 13,
+					zoomControl: false,
+					attributionControl: false
+				});
+				new L.control.zoom({
+					position: "bottomright"
+				}).addTo(map);
+				var tileOptions = {
+					maxZoom: 18,
+					minZoom: 1
+				};
+				var slmap = new L.TileLayer.ChinaProvider("TianDiTu.Normal.Map", tileOptions);
+				var slmapa = new L.TileLayer.ChinaProvider("TianDiTu.Normal.Annotion", tileOptions);
+				var yxmap = new L.TileLayer.ChinaProvider("TianDiTu.Satellite.Map", tileOptions);
+				var yxmapa = new L.TileLayer.ChinaProvider("TianDiTu.Satellite.Map", tileOptions);
+				var sl = SL = new L.layerGroup([slmap, slmapa]).addTo(map),
+						yx = YX = new L.layerGroup([yxmap, yxmapa]);
+				var baseLayers = {
+					"矢量图": sl,
+					"影像图": yx
+				};
+				sl.addTo(map);
+				var markerLayer = LAYERS = new L.LayerGroup().addTo(map);
+				map.addLayer(markerLayer);
+				renderCenterMarker(map);
+				getChangePos(map, markerLayer);
+			}
+
+			function getRealPos(markerLayer, map, callback) {
+				getPos(function(lat, lng) {
+					var icon = new L.icon({
+						iconUrl: "../imgs/icon/2.png",
+						iconSize: [25, 25]
+					});
+					var marker = new L.marker([lat, lng], {
+						icon: icon
+					}).addTo(markerLayer);
+					callback ? callback.call(this, marker) : null;
+				});
+			}
+
+			function getPos(callback) {
+				plus.geolocation.getCurrentPosition(function(position) {
+					var codns = position.coords; //获取地理坐标信息；
+					var lat = codns.latitude; //获取到当前位置的纬度；
+					var longt = codns.longitude; //获取到当前位置的经度
+					callback.call(this, lat, longt);
+				}, function(e) {
+					alert("获取位置信息失败：" + e.message);
+				});
+			}
+
+			function openMenu() {
+				MENU.show("slide-in-top", 200, function() {
+					main.setStyle({
+						mask: 'rgba(0,0,0,0.4)'
+					});
+				});
+				showMenu = true;
+			}
+
+			function closeMenu() {
+				if (showMenu) {
+					main.setStyle({
+						mask: 'none',
+						transition: {
+							duration: 100
+						}
+					});
+					MENU.hide();
+					showMenu = false;
+				}
+			}
+			window.addEventListener("reload", function() {
+				getChangePos(MAP, LAYERS);
+			})
+
+			function getChangePos(map, layers) {
+				server.getChanges({
+					keywords: "",
+					status: "",
+					yunit: "",
+					phone: main.tel,
+					datatype: ""
+				}, function(rep) {
+					layers.clearLayers();
+					if (rep.length > 0) {
+						for (var i = 0; i < rep.length; i++) {
+							if (rep[i].Coords) {
+								var latlng = rep[i].Coords.replace("POINT(", "").replace(")", "").split(" ");
+								var marker = L.marker([parseFloat(latlng[1]), parseFloat(latlng[0])], {
+									icon: getIcon(rep[i].Status),
+									data: rep[i]
+								}).addTo(layers);
+								marker.on("click", function(e) {
+									showMarkerInfo(e.target.options.data);
+								});
+							}
+						}
+					}
+				});
+			}
+
+			function showMarkerInfo(d) {
+				showInfo = true;
+				INFO = mui.openWindow({
+					id: "info",
+					url: "info.html",
+					extras: {
+						data: d
+					},
+					styles: {
+						top: document.documentElement.clientHeight - 300 + "px",
+						bottom: "0px"
+					},
+					createNew:true,
+					show: {
+						aniShow: "slide-in-bottom",
+						autoShow: true
+					}
+				});
+
+				setTimeout(function () {
+					main.setStyle({
+						mask: 'rgba(0,0,0,0.4)'
+					});
+				},200)
+			}
+
+			function hideInfo() {
+				if(showInfo){
+					main.setStyle({
+						mask: 'none',
+						transition: {
+							duration: 100
+						}
+					});
+					showInfo = false;
+					INFO.hide();
+				}
+			}
+
+
+			function renderCenterMarker(map) {
+				map.on("moveend", function(e) {
+					var _center = map.getCenter();
+					vm.latlng = _center;
+					getQuery(_center);
+				});
+				map.fire("moveend");
+			}
+
+			function getQuery(center) {
+				if (typeof vm != "undefined") {
+					vm.result = "查询中";
+				}
+				server.getQuery({
+					x: center.lng,
+					y: center.lat
+				}, function(rep) {
+					if (rep.length > 0) {
+						vm.result = rep[0].address;
+					} else {
+						vm.result = "无相关信息";
+					}
+				})
+			}
+
+			function getIcon(type) {
+				var path = "../imgs/";
+				switch (type) {
+					case 0:
+					{
+						path += "wsh.png"
+					}
+						break;
+					case 1:
+					{
+						path += "ytg.png"
+					}
+						break;
+					case 3:
+					{
+						path += "other.png";
+					}
+						break
+				}
+				return new L.icon({
+					iconUrl: path,
+					iconSize: [20, 30],
+					iconAnchor: [11, 38]
+				});
+			}
+			var first = null;
+			/*mui.back = function() {
+//				closeMenu();
+//				hideInfo();
+			}*/
+		})
+	});
+</script>

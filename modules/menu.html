@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<script src="../js/mui.min.js"></script>
+		<link href="../css/mui.min.css" rel="stylesheet" />
+		<link href="../css/jui.css" rel="stylesheet" />
+	</head>
+
+	<body class="page-menu">
+		<ul class="mui-table-view mui-grid-view mui-grid-9">
+			<li class="mui-table-view-cell mui-media mui-col-xs-6">
+				<a href="userinfo.html" open-type="loading">
+					<span class="mui-icon">
+						<img src="../imgs/zhxx.png">
+					</span>
+					<div class="mui-media-body">账户信息</div>
+				</a>
+			</li>
+			<li class="mui-table-view-cell mui-media mui-col-xs-6">
+				<a href="history.html" open-type="loading">
+					<span class="mui-icon">
+							<img src="../imgs/lsgd.png">
+					</span>
+					<div class="mui-media-body">历史工单</div>
+				</a>
+			</li>
+			<li class="mui-table-view-cell mui-media mui-col-xs-6">
+				<a href="bussiness.html">
+					<span class="mui-icon">
+							<img src="../imgs/shrz.png" style="height: 52px;width: 52px;">
+					</span>
+					<div class="mui-media-body">商户入驻</div>
+				</a>
+			</li>
+			<li class="mui-table-view-cell mui-media mui-col-xs-6">
+				<a>
+					<span class="mui-icon">
+							<img src="../imgs/yhzc.png">
+					</span>
+					<div class="mui-media-body">用户注册</div>
+				</a>
+			</li>
+			<li class="mui-table-view-cell mui-media mui-col-xs-6">
+				<a href="message.html">
+					<span class="mui-icon">
+							<img src="../imgs/xxzx.png">
+					</span>
+					<div class="mui-media-body">消息中心</div>
+				</a>
+			</li>
+			<li class="mui-table-view-cell mui-media mui-col-xs-6">
+				<a href="about.html">
+					<span class="mui-icon">
+							<img src="../imgs/gywm.png">
+					</span>
+					<div class="mui-media-body">关于我们</div>
+				</a>
+			</li>
+		</ul>
+	</body>
+
+</html>
+
+<script type="text/javascript" charset="utf-8">
+	var index;
+	mui.plusReady(function() {
+		mui('.mui-table-view').on('tap', 'a', function() {
+			var id = this.getAttribute("href");
+			var href = this.href;
+			var type = this.getAttribute("open-type");
+			if (!href) {
+				return;
+			}
+			mui.openWindow({
+				id: id,
+				url: href,
+				show: {
+					aniShow: "slide-in-right",
+					autoShow: type == "loading" ? false : true
+				},
+				waiting: {
+					autoShow: type == "loading" ? true : false,
+					title: '正在加载'
+				}
+			});
+		})
+	})
+	mui.back = function() {
+		main = plus.webview.getWebviewById("map");
+		main.setStyle({
+			mask: 'none',
+			transition: {
+				duration: 100
+			}
+		});
+		current = plus.webview.currentWebview();
+		current.hide();
+	}
+</script>

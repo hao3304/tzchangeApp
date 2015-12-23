@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../js/mui.min.js"></script>
+    <script src="../avalon.js"></script>
+    <link href="../css/mui.min.css" rel="stylesheet" />
+</head>
+<body>
+ <div class="mui-content-padded" ms-controller="info" style="position: relative;">
+    <h4 ms-text="data.Place">
+    </h4>
+     <span class="mui-badge mui-badge-primary" ms-text="data.Base_Name" style="position: absolute;right: 5px;top:0px;"></span>
+     <p ms-text="data.Content"></p>
+     <ul class="mui-table-view mui-table-view-chevron">
+         <li class="mui-table-view-cell">
+             <a >
+                 <span class="mui-badge mui-badge-inverted" ms-text="data.Upload_Time"></span>
+                 上报时间
+             </a>
+         </li>
+         <li class="mui-table-view-cell">
+             <a >
+                 <span class="mui-badge mui-badge-inverted" ms-text="data.Unit"></span>
+                 上报单位
+             </a>
+         </li>
+         <li class="mui-table-view-cell">
+             <a >
+                 <span class="mui-badge mui-badge-inverted" ms-click="dial(data.Phone)" ms-text="data.Phone"></span>
+                 上报号码
+             </a>
+         </li>
+         <li class="mui-table-view-divider" ms-visible="data.images.length>0">现场照片</li>
+     </ul>
+
+     <ul class="mui-table-view mui-grid-view" ms-visible="data.images.length>0">
+         <li class="mui-table-view-cell mui-media mui-col-xs-6" ms-repeat="data.images">
+             <a href="#">
+                 <img class="mui-media-object" ms-src="prefix+el">
+                 <div class="mui-media-body">图片{{$index+1}}</div>
+             </a>
+         </li>
+     </ul>
+
+ </div>
+</body>
+</html>
+<script>
+
+    mui.plusReady(function() {
+        require(["server.js"], function(server) {
+            var current = plus.webview.currentWebview();
+            var data = current.data;
+            data.images =  data.Imgs?data.Imgs.split(","):[];
+            var vm = avalon.define({
+                $id:"info",
+                data:data,
+                prefix:server.prefix,
+                dial: function (phone) {
+                    plus.device.dial(phone);
+                }
+            });
+            avalon.scan();
+
+        });
+
+        mui.back = function() {
+            main = plus.webview.getWebviewById("map");
+            main.setStyle({
+                mask: 'none',
+                transition: {
+                    duration: 100
+                }
+            });
+
+            current = plus.webview.currentWebview();
+            current.remove();
+            current.hide();
+        }
+
+    })
+
+
+</script>

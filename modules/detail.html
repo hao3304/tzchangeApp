@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<script src="../js/mui.min.js"></script>
+		<link href="../css/mui.min.css" rel="stylesheet" />
+		<script src="../avalon.js" type="text/javascript" charset="utf-8"></script>
+	</head>
+
+	<body ms-controller="detail">
+		<div class="mui-bar-nav mui-bar">
+			<h5 class="mui-title">工单详情</h5>
+		</div>
+		<form class="mui-input-group mui-content">
+			<div class="mui-input-row">
+				<label>上报单位</label>
+				<input type="text" disabled="" ms-value="{{detail.Unit}}">
+			</div>
+			<div class="mui-input-row">
+				<label>上报人</label>
+				<input type="text" disabled="" ms-value="{{detail.Phone_User}}">
+			</div>
+			<div class="mui-input-row">
+				<label>上报时间</label>
+				<input type="text" disabled="" ms-value="{{detail.Upload_Time}}">
+			</div>
+			<div class="mui-input-row">
+				<label>当前状态</label>
+				<input type="text" disabled="" ms-value="{{detail.Status | return}}">
+			</div>
+			<div class="mui-input-row">
+				<label>变化类型</label>
+				<input type="text" disabled="" ms-value="{{detail.Data_Type}}">
+			</div>
+			<div class="mui-input-row">
+				<label>上报内容</label>
+				<input type="text" disabled="" ms-value="{{detail.Content}}">
+			</div>
+		</form>
+		<div class="mui-table-view-divider" ms-visible="detail.Imgs.length>0">现场照片</div>
+		<ul class="mui-table-view mui-grid-view" ms-visible="detail.Imgs.length>0">
+			<li ms-repeat="detail.Imgs" class="mui-table-view-cell mui-media mui-col-xs-6">
+				<a href="#">
+					<img class="mui-media-object" ms-src="{{prefix+el}}">
+					<div class="mui-media-body">图片
+						<label ms-text='$index+1'></label>
+					</div>
+				</a>
+			</li>
+		</ul>
+	</body>
+
+</html>
+<script type="text/javascript" charset="utf-8">
+	mui.plusReady(function() {
+		require(["server.js"], function(Service) {
+			avalon.filters = {
+				status: function(v) {
+					return "222";
+				}
+			}
+			var current = plus.webview.currentWebview();
+			plus.nativeUI.showWaiting();
+			var vm = avalon.define({
+				$id: "detail",
+				name: "jack",
+				detail: {},
+				prefix: Service.prefix
+			})
+			avalon.scan();
+			Service.getChangeDetail(current.cid, function(rep) {
+				rep.Imgs = rep.Imgs ? rep.Imgs.split(",") : [];
+				vm.detail = rep;
+				plus.nativeUI.closeWaiting();
+			})
+		})
+	})
+</script>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<script src="../js/mui.min.js"></script>
+		<script src="../avalon.js"></script>
+		<link href="../css/mui.min.css" rel="stylesheet" />
+
+	</head>
+
+	<body>
+		<div class="mui-content" ms-controller="submit">
+
+			<div class="mui-card">
+
+				<form class="mui-input-group">
+					<div class="mui-input-row">
+						<label>发现地点</label>
+						<input type="text" class="" placeholder="请输入发现地点" ms-duplex-string="form.place" />
+					</div>
+					<div class="mui-input-row">
+						<label>变化类型</label>
+						<select ms-duplex-number="form.datatype">
+							<option ms-repeat="types" ms-attr-value="el.ID" ms-text="el.Base_Name"></option>
+						</select>
+					</div>
+				</form>
+			</div>
+
+			<div class="mui-content-padded">
+				<h5>文字描述：</h5>
+				<div class="mui-input-row" style="margin: 10px 5px;">
+					<textarea rows="5" placeholder="文字描述" ms-duplex-string="form.content"></textarea>
+				</div>
+			</div>
+
+			<div class="mui-content-padded" style="display: none;" ms-visible="files.length>0">
+				<ul class="mui-table-view mui-grid-view">
+					<li ms-repeat="files" class="mui-table-view-cell mui-media mui-col-xs-6">
+						<img class="mui-media-object" ms-attr-src="el.src">
+						<div class="mui-media-body">现场照片{{$index+1}}</div>
+					</li>
+				</ul>
+			</div>
+
+			<div class="mui-content-padded" style="text-align: center;">
+				<button class="mui-btn mui-btn-primary" ms-click="getImage">
+					<span class="mui-icon mui-icon-camera"></span> 拍照
+				</button>
+			</div>
+
+			<div class="mui-content-padded" style="margin-top: 40px;">
+				<button style="padding: 10px;" class="mui-btn mui-btn-block mui-btn-green" ms-click="onSubmit">
+					<span class="mui-icon mui-icon-upload"></span>
+					上传</button>
+			</div>
+		</div>
+	</body>
+
+</html>
+<script type="text/javascript" charset="utf-8">
+	mui.plusReady(function() {
+		require(["server.js"], function(server) {
+			var main = plus.webview.getWebviewById("map");
+			var current = plus.webview.currentWebview();
+			var vm = avalon.define({
+				$id: "submit",
+				types: [],
+				files: [],
+				form: {
+					datatype: null,
+					phone: main.tel,
+					lnglat: current.latlng.lng+","+current.latlng.lat,
+					place: current.address,
+					content: ""
+				},
+				getImage: function() {
+					plus.camera.getCamera().captureImage(function(p) {
+						appendFile(p);
+					});
+				},
+				onSubmit: function() {
+					plus.nativeUI.confirm("确认开始上传变化点？", function(e) {
+						if (e.index == 0) {
+							plus.nativeUI.showWaiting("上传中...");
+							postChange(vm.form);
+						}
+					})
+				}
+			});
+			avalon.scan();
+			server.getChangeTypes(function(rep) {
+				vm.types = rep;
+				vm.form.datatype = rep[0].ID;
+				avalon.scan();
+			});
+			var index = 1;
+
+			function appendFile(p) {
+				plus.io.resolveLocalFileSystemURL(p, function(entry) {
+					var n = p.substr(p.lastIndexOf('/') + 1);
+					vm.files.push({
+						name: "uploadkey" + index,
+						path: p,
+						src: entry.__remoteURL__
+					});
+					index++;
+				});
+			}
+
+			function postChange(p) {
+				server.postChange(p, function(rep) {
+					if (rep) {
+						postPic(rep);
+					}
+				})
+			}
+
+			function postPic(id) {
+				var server_path = server.getPicUrl(id);
+				var task = plus.uploader.createUpload(server_path, {
+						method: "POST"
+					},
+					function(t, status) { //上传完成
+						
+						plus.nativeUI.closeWaiting();
+						
+						plus.nativeUI.alert("上传成功！",function(){
+							current.close();
+							mui.fire(main,"reload");
+						})
+						
+
+					}
+				);
+				
+				
+				var files = vm.files;
+				for (var i = 0; i < files.length; i++) {
+					var f = files[i];
+					task.addFile(f.path, {
+						key: f.name
+					});
+				}
+				task.start();
+			}
+		})
+	})
+</script>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+	<title></title>
+	<script src="../js/mui.min.js"></script>
+	<script src="../avalon.js"></script>
+	<link href="../css/mui.min.css" rel="stylesheet" />
+
+</head>
+
+<body ms-controller="submit">
+
+<div class="mui-content-padded">
+	<div id="segmentedControl" class="mui-segmented-control ">
+		<a class="mui-control-item mui-active" href="#item1mobile">
+			商户入驻
+		</a>
+		<a class="mui-control-item" href="#item2mobile">
+			上报记录
+		</a>
+
+	</div>
+</div>
+<div class="mui-content">
+	<div id="item1mobile" class="mui-control-content mui-active">
+		<div class="mui-card">
+
+			<form class="mui-input-group">
+				<div class="mui-input-row">
+					<label>商户名称</label>
+					<input type="text" class="" placeholder="请输入商户名称" ms-duplex-string="form.businessname" />
+				</div>
+				<div class="mui-input-row">
+					<label>行业类型</label>
+					<select ms-duplex-number="form.datatype">
+						<option ms-repeat="types" ms-attr-value="el.ID" ms-text="el.Base_Name"></option>
+					</select>
+				</div>
+				<div class="mui-input-row">
+					<label>位置</label>
+					<a ms-click="getPos" style="position: absolute;margin-top: 10px;"><span class="mui-icon mui-icon-map"></span>选择位置</a>
+					<input  type="text" style="display: none;" class="" placeholder="请选择位置" ms-duplex-string="form.lnglat" />
+				</div>
+				<div class="mui-input-row">
+					<label>详细地址</label>
+					<input type="text" class="" placeholder="请输入详细地址" ms-duplex-string="form.place" />
+				</div>
+			</form>
+		</div>
+
+		<div class="mui-content-padded">
+			<h5>店面描述：</h5>
+			<div class="mui-input-row" style="margin: 10px 5px;">
+				<textarea rows="5" placeholder="店面描述" ms-duplex-string="form.content"></textarea>
+			</div>
+		</div>
+
+		<div class="mui-content" style="display: none;" ms-visible="files.length>0">
+			<ul class="mui-table-view mui-grid-view">
+				<li ms-repeat="files" class="mui-table-view-cell mui-media mui-col-xs-6">
+					<img class="mui-media-object" ms-attr-src="el.src">
+					<div class="mui-media-body">门脸照片</div>
+				</li>
+				<li ms-repeat="files2" class="mui-table-view-cell mui-media mui-col-xs-6">
+					<img class="mui-media-object" ms-attr-src="el.src">
+					<div class="mui-media-body">营业执照</div>
+				</li>
+			</ul>
+		</div>
+
+		<div class="mui-content-padded" style="text-align: center;">
+			<button ms-visible="files.length<1" class="mui-btn mui-btn-primary" ms-click="getImage1">
+				<span class="mui-icon mui-icon-camera"></span> 门脸照片
+			</button>
+			<button ms-visible="files2.length<1" class="mui-btn mui-btn-primary" ms-click="getImage2">
+				<span class="mui-icon mui-icon-camera"></span> 营业执照
+			</button>
+		</div>
+
+		<div class="mui-content-padded" style="margin-top: 40px;">
+			<button style="padding: 10px;" class="mui-btn mui-btn-block mui-btn-green" ms-click="onSubmit">
+				<span class="mui-icon mui-icon-upload"></span> 上传
+			</button>
+		</div>
+	</div>
+	<div id="item2mobile" class="mui-control-content">
+		<div ms-visible="list2.length>0" id="scroll2" class="mui-scroll-wrapper" style="margin-bottom: 55px">
+			<div class="mui-scroll">
+				<ul class="mui-table-view">
+					<li ms-repeat="list2" class="mui-table-view-cell mui-media controller">
+						<div class="mui-media-body">
+							<span ms-text="el.Place"></span>
+							<a class="mui-pull-right" ms-text="el.Base_Name"></a>
+							<p class="mui-ellipsis2" ms-text="el.Content"></p>
+							<p class="mui-ellipsis mui-pull-right"  ms-text="el.Upload_Time"></p>
+						</div>
+					</li>
+				</ul>
+			</div>
+		</div>
+		<div class="mui-loading" ms-visible="list2.length==0">
+			<div class="mui-spinner">
+				<div class="mui-spinner-indicator mui-spinner-indicator12"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator11"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator10"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator9"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator8"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator7"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator6"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator5"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator4"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator3"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator2"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator1"></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+</body>
+
+</html>
+<script type="text/javascript" charset="utf-8">
+	mui.plusReady(function() {
+		require(["server.js"], function(server) {
+			var current = plus.webview.currentWebview();
+			var main = plus.webview.getWebviewById("map");
+			var vm = avalon.define({
+				$id: "submit",
+				types: [],
+				files: [],
+				files2:[],
+				list2:[],
+				tab:"form",
+				form: {
+					datatype: null,
+					businessname: "",
+					phone: main.tel,
+					lnglat: "",
+					place: "",
+					content: ""
+				},
+				changeTab: function (t) {
+					alert(t)
+					vm.tab = t;
+				},
+				getImage1: function() {
+					plus.camera.getCamera().captureImage(function(p) {
+						appendFile(p);
+					});
+				},
+				getImage2: function() {
+					plus.camera.getCamera().captureImage(function(p) {
+						appendFile2(p);
+					});
+				},
+				onSubmit: function() {
+					plus.nativeUI.confirm("确认开始上传商户入驻信息？", function(e) {
+						if (e.index == 0) {
+							plus.nativeUI.showWaiting("上传中...");
+							postChange(vm.form);
+						}
+					})
+				},
+				getPos: function () {
+					mui.openWindow({
+						id: "getPosition",
+						url: "getPosition.html",
+						show: {
+							aniShow: "zoom-fade-out",
+							autoShow: true
+						}
+					});
+				}
+			});
+
+			var showTab2 =false;
+
+			avalon.scan();
+
+			window.addEventListener("getPos", function (e) {
+				vm.form.lnglat = e.detail.latlng;
+				vm.form.place = e.detail.place;
+			});
+
+			mui("#item2mobile")[0].addEventListener("shown.mui.tab", function () {
+				if(!showTab2){
+					getOtherData();
+					showTab2 = true;
+				}
+			});
+
+			function getOtherData(){
+				server.businessquery({businessname:"",phone:"",status:"",datatype:""}, function (rep) {
+					vm.list2 = rep;
+				})
+			}
+
+			server.getChangeTypes(function(rep) {
+				vm.types = rep;
+				vm.form.datatype = rep[0].ID;
+				avalon.scan();
+			});
+			var index = 1;
+
+			function appendFile(p) {
+				plus.io.resolveLocalFileSystemURL(p, function(entry) {
+					var n = p.substr(p.lastIndexOf('/') + 1);
+					vm.files.push({
+						name: "uploadkey" + index,
+						path: p,
+						src: entry.__remoteURL__
+					});
+					index++;
+				});
+			}
+
+			function appendFile2(p) {
+				plus.io.resolveLocalFileSystemURL(p, function(entry) {
+					var n = p.substr(p.lastIndexOf('/') + 1);
+					vm.files2.push({
+						name: "uploadkey" + index,
+						path: p,
+						src: entry.__remoteURL__
+					});
+					index++;
+				});
+			}
+
+			function postChange(p) {
+				server.businessupload(p, function(rep) {
+					if (rep) {
+						postPic(rep);
+					}
+				})
+			}
+
+			function postPic(id) {
+				var server_path = server.upFileBusiness(id);
+				var task = plus.uploader.createUpload(server_path, {
+							method: "POST"
+						},
+						function(t, status) { //上传完成
+							postPic2(id);
+						}
+				);
+				var files = vm.files;
+				for (var i = 0; i < files.length; i++) {
+					var f = files[i];
+					task.addFile(f.path, {
+						key: f.name
+					});
+				}
+				task.start();
+			}
+
+			function postPic2(id) {
+				var server_path = server.uploadlicenseimage(id);
+				var task = plus.uploader.createUpload(server_path, {
+							method: "POST"
+						},
+						function(t, status) { //上传完成
+							plus.nativeUI.closeWaiting();
+							plus.nativeUI.alert("上传成功！", function() {
+								current.close();
+							})
+						}
+				);
+				var files = vm.files2;
+				for (var i = 0; i < files.length; i++) {
+					var f = files[i];
+					task.addFile(f.path, {
+						key: f.name
+					});
+				}
+				task.start();
+			}
+		})
+	})
+</script>

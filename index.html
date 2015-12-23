@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title>变化发现</title>
+		<script src="js/mui.min.js"></script>
+		<script src="avalon.js" type="text/javascript" charset="utf-8"></script>
+		<link href="css/mui.css" rel="stylesheet" />
+		<link rel="stylesheet" type="text/css" href="css/jui.css" />
+
+	</head>
+
+	<body class="page-login" ms-controller="test">
+		<div class="mui-content-padded">
+			<div class="jui-logo">
+				<img src="imgs/logo-96.png">
+				<h4>台州地理信息（POI）变化发现</h4>
+			</div>
+			<div class="mui-card">
+				<form class="mui-input-group">
+					<div class="mui-input-row">
+						<label>用户</label>
+						<input type="text" placeholder="请输入用户名" ms-duplex="username" />
+					</div>
+					<div class="mui-input-row">
+						<label>密码</label>
+						<input type="password" placeholder="请输入密码" ms-duplex="pwd" />
+					</div>
+				</form>
+			</div>
+			<div class="mui-btn-row login-btns" style="text-align: center;">
+				<button class="mui-btn mui-btn-warning " style="width:120px" onclick="return false;" ms-click="onLogin">
+					 马上登录
+				</button>
+				<button class="mui-btn mui-btn-green" style="width:120px"  ms-click="onBrowse">直接浏览</button>
+			</div>
+			
+		</div>
+
+	</body>
+
+</html>
+<script>
+	mui.plusReady(function() {
+		require(["server"], function(server) {
+			function doLogin(user, pwd) {
+				server.login({
+					username: "13777416155",
+					pwd: "123"
+				}, function(rep) {
+					if (rep) {
+						mui.openWindow({
+							url: 'modules/map.html',
+							id: 'map',
+							show: {
+								aniShow: "fade-in",
+								autoShow: false
+							},
+							waiting:{
+								autoShow:false
+							},
+							extras: {
+								tel: user
+							}
+						});
+					} else {
+						plus.nativeUI.alert("用户名或密码错误！");
+					}
+				});
+			}
+			var vm = avalon.define({
+				$id: "test",
+				username: "13777416155",
+				pwd: "123",
+				onLogin: function(e) {
+					plus.nativeUI.showWaiting();
+					doLogin(vm.username, vm.pwd);
+				},
+				onBrowse:function(){
+					mui.openWindow({
+							url: 'modules/map/map.html',
+							id: 'map',
+							show: {
+								aniShow: "fade-in",
+								autoShow: false
+							},
+							waiting:{
+								autoShow:false
+							},
+							extras: {
+								tel: ""
+							}
+						});
+				}
+			});
+			avalon.scan();
+		})
+		mui.init();
+
+		function createLocalPushMsg(){
+			var options = {cover:true};
+			var str = "";
+			str += ": 欢迎使用Html5 Plus创建本地消息！";
+			plus.push.createMessage( str, "LocalMSG", options );
+		}
+
+		setTimeout(function(){
+			createLocalPushMsg();
+		},5000)
+
+		plus.push.addEventListener( "click", function( msg ) {
+			plus.nativeUI.alert( msg.content );
+		});
+
+	})
+	var first = null;
+	mui.back = function() {
+		//首次按键，提示‘再按一次退出应用’
+		if (!first) {
+			first = new Date().getTime();
+			mui.toast('再按一次退出应用');
+			setTimeout(function() {
+				first = null;
+			}, 1000);
+			return;
+		} else {
+			if (new Date().getTime() - first < 1000) {
+				plus.runtime.quit();
+			}
+		}
+	}
+
+
+
+</script>

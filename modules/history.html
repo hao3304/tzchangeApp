@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+	<title>历史工单</title>
+	<script src="../js/mui.min.js"></script>
+	<script src="../avalon.js" type="text/javascript" charset="utf-8"></script>
+	<link href="../css/mui.min.css" rel="stylesheet" />
+	<link href="../css/jui.css" rel="stylesheet" />
+</head>
+<body>
+<div class="mui-content-padded">
+	<div id="segmentedControl" class="mui-segmented-control">
+		<a class="mui-control-item mui-active" href="#item1mobile">
+			本机上报
+		</a>
+		<a class="mui-control-item" href="#item2mobile">
+			他人上报
+		</a>
+		<a class="mui-control-item" href="#item3mobile">
+			已更新
+		</a>
+	</div>
+</div>
+<div style="height: 100%" ms-controller="history">
+	<div id="item1mobile" class="mui-control-content mui-active" style="height: 100%">
+		<div ms-visible="list1.length>0" id="scroll1" class="mui-scroll-wrapper" style="margin-bottom: 55px">
+			<div class="mui-scroll">
+				<ul class="mui-table-view">
+					<li ms-repeat="list1" ms-click="getDetail(el.ID)" class="mui-table-view-cell mui-media controller">
+						<div class="mui-media-body">
+							<span ms-text="el.Place"></span>
+							<a class="mui-pull-right" ms-text="el.Base_Name"></a>
+							<p class="mui-ellipsis2" ms-text="el.Content"></p>
+							<p class="mui-ellipsis mui-pull-right"  ms-text="el.Upload_Time"></p>
+						</div>
+					</li>
+				</ul>
+			</div>
+		</div>
+		<div class="mui-loading" ms-visible="list1.length==0">
+			<div class="mui-spinner">
+				<div class="mui-spinner-indicator mui-spinner-indicator12"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator11"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator10"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator9"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator8"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator7"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator6"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator5"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator4"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator3"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator2"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator1"></div>
+			</div>
+		</div>
+	</div>
+	<div id="item2mobile" class="mui-control-content" style="height: 100%">
+		<div ms-visible="list2.length>0" id="scroll2" class="mui-scroll-wrapper" style="margin-bottom: 55px">
+			<div class="mui-scroll">
+				<ul class="mui-table-view">
+					<li ms-repeat="list2" class="mui-table-view-cell mui-media controller">
+						<div class="mui-media-body">
+							<span ms-text="el.Place"></span>
+							<a class="mui-pull-right" ms-text="el.Base_Name"></a>
+							<p class="mui-ellipsis2" ms-text="el.Content"></p>
+							<p class="mui-ellipsis mui-pull-right"  ms-text="el.Upload_Time"></p>
+						</div>
+					</li>
+				</ul>
+			</div>
+		</div>
+		<div class="mui-loading" ms-visible="list2.length==0">
+			<div class="mui-spinner">
+				<div class="mui-spinner-indicator mui-spinner-indicator12"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator11"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator10"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator9"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator8"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator7"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator6"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator5"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator4"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator3"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator2"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator1"></div>
+			</div>
+		</div>
+	</div>
+	<div id="item3mobile" class="mui-control-content" style="height: 100%">
+		<div ms-visible="list3.length>0" id="scroll3" class="mui-scroll-wrapper" style="margin-bottom: 55px">
+			<div class="mui-scroll">
+				<ul class="mui-table-view">
+					<li ms-repeat="list3" class="mui-table-view-cell mui-media controller">
+						<div class="mui-media-body">
+							<span ms-text="el.Place"></span>
+							<a class="mui-pull-right" ms-text="el.Base_Name"></a>
+							<p class="mui-ellipsis2" ms-text="el.Content"></p>
+							<p class="mui-ellipsis mui-pull-right"  ms-text="el.Upload_Time"></p>
+						</div>
+					</li>
+				</ul>
+			</div>
+		</div>
+		<div class="mui-loading" ms-visible="list3.length==0">
+			<div class="mui-spinner">
+				<div class="mui-spinner-indicator mui-spinner-indicator12"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator11"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator10"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator9"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator8"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator7"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator6"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator5"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator4"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator3"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator2"></div>
+				<div class="mui-spinner-indicator mui-spinner-indicator1"></div>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+
+</html>
+<script type="text/javascript" charset="utf-8">
+	mui.init();
+
+	mui.ready(function () {
+		mui('#scroll1').scroll({
+			indicators: true //是否显示滚动条
+		});
+		mui('#scroll2').scroll({
+			indicators: true //是否显示滚动条
+		});
+		mui('#scroll3').scroll({
+			indicators: true //是否显示滚动条
+		});
+	});
+
+	mui.plusReady(function(){
+		plus.nativeUI.closeWaiting();
+		var showTab2 = false,showTab3 = false;
+		require(["server.js"], function (server) {
+
+			var main = plus.webview.getWebviewById("map");
+			mui.currentWebview.show();
+			var vm = avalon.define({
+				$id:"history",
+				list1:[],
+				list2:[],
+				list3:[],
+				getDetail:function(id){
+                 mui.openWindow({
+					id: "detail",
+					url: "detail.html",
+					show: {
+						aniShow: "zoom-fade-out",
+						autoShow: true
+					},
+					extras:{
+						cid:id
+					}
+				});
+					
+				}
+			});
+			avalon.scan();
+
+			mui("#item2mobile")[0].addEventListener("shown.mui.tab", function () {
+				if(!showTab2){
+					getOtherData();
+					showTab2 = true;
+				}
+			});
+			mui("#item3mobile")[0].addEventListener("shown.mui.tab", function () {
+				if(!showTab3){
+					getStatusData();
+					showTab3 = true;
+				}
+			});
+
+			function getSelfData(){
+				server.getChanges({keywords:"",status:"",yunit:"",phone:main.tel,datatype:""}, function (rep) {
+					vm.list1 = rep;
+					avalon.scan();
+				})
+			}
+
+			function getOtherData(){
+				server.getOtherChanges(main.tel, function (rep) {
+					if(rep.length == 0){
+						vm.list2 = [{Place:"暂无数据"}];
+						avalon.scan()
+					}else{
+						vm.list2 = rep;
+					}
+				})
+			}
+
+			function getStatusData(){
+				server.getOtherChanges(3, function (rep) {
+					if(rep.length == 0){
+						vm.list3 = [{Place:"暂无数据"}];
+						avalon.scan()
+					}else{
+						vm.list3 = rep;
+					}
+				})
+			}
+			
+		
+
+			getSelfData();
+		})
+
+	})
+
+
+</script>
